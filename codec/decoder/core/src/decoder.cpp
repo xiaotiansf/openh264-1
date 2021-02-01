@@ -192,6 +192,7 @@ static int32_t DecreasePicBuff (PWelsDecoderContext pCtx, PPicBuff* ppPicBuf, co
   }
 
   ResetReorderingPictureBuffers (pCtx->pPictReoderingStatus, pCtx->pPictInfoList, false);
+  if (pCtx->pDstInfo) pCtx->pDstInfo->iBufferStatus = 0;
 
   int32_t iPrevPicIdx = -1;
   for (iPrevPicIdx = 0; iPrevPicIdx < kiOldSize; ++iPrevPicIdx) {
@@ -259,6 +260,7 @@ void DestroyPicBuff (PWelsDecoderContext pCtx, PPicBuff* ppPicBuf, CMemoryAlign*
   PPicBuff pPicBuf = NULL;
 
   ResetReorderingPictureBuffers (pCtx->pPictReoderingStatus, pCtx->pPictInfoList, false);
+  if (pCtx->pDstInfo) pCtx->pDstInfo->iBufferStatus = 0;
 
   if (NULL == ppPicBuf || NULL == *ppPicBuf)
     return;
@@ -303,6 +305,7 @@ void ResetReorderingPictureBuffers (PPictReoderingStatus pPictReoderingStatus, P
       pPictInfo[i].bLastGOP = false;
       pPictInfo[i].iPOC = IMinInt32;
     }
+    pPictInfo->sBufferInfo.iBufferStatus = 0;
   }
 }
 

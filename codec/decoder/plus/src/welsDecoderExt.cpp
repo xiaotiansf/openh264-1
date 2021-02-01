@@ -450,6 +450,7 @@ int32_t CWelsDecoder::ResetDecoder (PWelsDecoderContext& pCtx) {
       WelsLog (&m_pWelsTrace->m_sLogCtx, WELS_LOG_ERROR, "ResetDecoder() failed as decoder context null");
     }
     ResetReorderingPictureBuffers (&m_sReoderingStatus, m_sPictInfoList, false);
+    if (pCtx->pDstInfo) pCtx->pDstInfo->iBufferStatus = 0;
   }
   return ERR_INFO_UNINIT;
 }
@@ -461,6 +462,7 @@ int32_t CWelsDecoder::ThreadResetDecoder (PWelsDecoderContext& pCtx) {
     WelsLog (&m_pWelsTrace->m_sLogCtx, WELS_LOG_INFO, "ResetDecoder(), context error code is %d", pCtx->iErrorCode);
     memcpy (&sPrevParam, pCtx->pParam, sizeof (SDecodingParam));
     ResetReorderingPictureBuffers (&m_sReoderingStatus, m_sPictInfoList, true);
+    if (pCtx->pDstInfo) pCtx->pDstInfo->iBufferStatus = 0;
     CloseDecoderThreads();
     UninitDecoder();
     InitDecoder (&sPrevParam);
@@ -915,6 +917,7 @@ DECODING_STATE CWelsDecoder::DecodeFrame2 (const unsigned char* kpSrc,
     unsigned char** ppDst,
     SBufferInfo* pDstInfo) {
   PWelsDecoderContext pDecContext = m_pDecThrCtx[0].pCtx;
+  pDecContext->pDstInfo = pDstInfo;
   return DecodeFrame2WithCtx (pDecContext, kpSrc, kiSrcLen, ppDst, pDstInfo);
 }
 
