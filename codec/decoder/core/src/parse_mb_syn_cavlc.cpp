@@ -1390,6 +1390,9 @@ int32_t ParseInterBInfo (PWelsDecoderContext pCtx, int16_t iMvArray[LIST_A][30][
             if (pCtx->pParam->eEcActiveIdc != ERROR_CON_DISABLE) {
               ref_idx_list[listIdx][0] = 0;
               pCtx->iErrorCode |= dsBitstreamError;
+              if (ppRefPic[listIdx][ref_idx_list[listIdx][0]] == NULL) {
+                return GENERATE_ERROR_NO(ERR_LEVEL_MB_DATA, ERR_INFO_INVALID_REF_INDEX);
+              }
             } else {
               return GENERATE_ERROR_NO (ERR_LEVEL_MB_DATA, ERR_INFO_INVALID_REF_INDEX);
             }
@@ -1439,6 +1442,9 @@ int32_t ParseInterBInfo (PWelsDecoderContext pCtx, int16_t iMvArray[LIST_A][30][
               if (pCtx->pParam->eEcActiveIdc != ERROR_CON_DISABLE) {
                 iRefIdx = 0;
                 pCtx->iErrorCode |= dsBitstreamError;
+                if (ppRefPic[listIdx][iRefIdx] == NULL) {
+                  return GENERATE_ERROR_NO(ERR_LEVEL_MB_DATA, ERR_INFO_INVALID_REF_INDEX);
+                }
               } else {
                 return GENERATE_ERROR_NO (ERR_LEVEL_MB_DATA, ERR_INFO_INVALID_REF_INDEX);
               }
@@ -1498,6 +1504,9 @@ int32_t ParseInterBInfo (PWelsDecoderContext pCtx, int16_t iMvArray[LIST_A][30][
               if (pCtx->pParam->eEcActiveIdc != ERROR_CON_DISABLE) {
                 iRefIdx = 0;
                 pCtx->iErrorCode |= dsBitstreamError;
+                if (ppRefPic[listIdx][iRefIdx] == NULL) {
+                  return GENERATE_ERROR_NO(ERR_LEVEL_MB_DATA, ERR_INFO_INVALID_REF_INDEX);
+                }
               } else {
                 return GENERATE_ERROR_NO (ERR_LEVEL_MB_DATA, ERR_INFO_INVALID_REF_INDEX);
               }
@@ -1644,6 +1653,9 @@ int32_t ParseInterBInfo (PWelsDecoderContext pCtx, int16_t iMvArray[LIST_A][30][
                 if (pCtx->pParam->eEcActiveIdc != ERROR_CON_DISABLE) {
                   iref = 0;
                   pCtx->iErrorCode |= dsBitstreamError;
+                  if (ppRefPic[listIdx][iref] == NULL) {
+                    return GENERATE_ERROR_NO(ERR_LEVEL_MB_DATA, ERR_INFO_INVALID_REF_INDEX);
+                  }
                 } else {
                   return GENERATE_ERROR_NO (ERR_LEVEL_MB_DATA, ERR_INFO_INVALID_REF_INDEX);
                 }
