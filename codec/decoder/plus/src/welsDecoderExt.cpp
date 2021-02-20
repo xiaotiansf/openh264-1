@@ -813,16 +813,6 @@ DECODING_STATE CWelsDecoder::DecodeFrame2WithCtx (PWelsDecoderContext pDecContex
       }
       return dsErrorFree;
     }
-    //allow to conceal B_SCLIE Bitstream error
-#if 0
-    if ((pDecContext->iErrorCode & dsBitstreamError) && pDecContext->eSliceType == B_SLICE) {
-      if (ResetDecoder(pDecContext)) {
-        pDstInfo->iBufferStatus = 0;
-        return (DECODING_STATE)pDecContext->iErrorCode;
-      }
-      return dsErrorFree;
-    }
-#endif
     //for AVC bitstream (excluding AVC with temporal scalability, including TP), as long as error occur, SHOULD notify upper layer key frame loss.
     if ((IS_PARAM_SETS_NALS (eNalType) || NAL_UNIT_CODED_SLICE_IDR == eNalType) ||
         (VIDEO_BITSTREAM_AVC == pDecContext->eVideoType)) {
