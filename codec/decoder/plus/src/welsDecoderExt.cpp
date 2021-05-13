@@ -1252,6 +1252,7 @@ void CWelsDecoder::ReleaseBufferedReadyPictureNoReorder(PWelsDecoderContext pCtx
       uiDecodingTimeStamp);
 #endif
 #endif
+    m_sReoderingStatus.iLastWrittenPOC = m_sPictInfoList[m_sReoderingStatus.iPictInfoIndex].iPOC;
     memcpy(pDstInfo, &m_sPictInfoList[m_sReoderingStatus.iPictInfoIndex].sBufferInfo, sizeof(SBufferInfo));
     ppDst[0] = pDstInfo->pDst[0];
     ppDst[1] = pDstInfo->pDst[1];
