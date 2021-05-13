@@ -922,6 +922,11 @@ DECODING_STATE CWelsDecoder::FlushFrame (unsigned char** ppDst,
     }
   }
   if (bEndOfStreamFlag && m_sReoderingStatus.iNumOfPicts > 0) {
+    if (!m_bIsBaseline && !m_sReoderingStatus.bHasBSlice)
+    {
+      ReleaseBufferedReadyPictureNoReorder(NULL, ppDst, pDstInfo);
+      return dsErrorFree;
+    }
     m_sReoderingStatus.iMinPOC = IMinInt32;
     if (m_bIsBaseline) {
       uint32_t uiDecodingTimeStamp = 0;
@@ -1219,14 +1224,74 @@ void CWelsDecoder::ReleaseBufferedReadyPicture (PWelsDecoderContext pCtx, unsign
   }
 }
 
-DECODING_STATE CWelsDecoder::ReorderPicturesInDisplay (PWelsDecoderContext pDecContext, unsigned char** ppDst,
-    SBufferInfo* pDstInfo) {
+//if there is no b-frame, no ordering based on values of POCs is necessary.
+//The function is added to force to avoid picture reordering because some h.264 streams do not follow H.264 POC specifications. 
+void CWelsDecoder::ReleaseBufferedReadyPictureNoReorder(PWelsDecoderContext pCtx, unsigned char** ppDst, SBufferInfo* pDstInfo)
+{
+  int32_t firstValidIdx = -1;
+  uint32_t uiDecodingTimeStamp = 0;
+  for (int32_t i = 0; i <= m_sReoderingStatus.iLargestBufferedPicIndex; ++i) {
+    if (m_sPictInfoList[i].iPOC != IMinInt32) {
+      uiDecodingTimeStamp = m_sPictInfoList[i].uiDecodingTimeStamp;
+      m_sReoderingStatus.iPictInfoIndex = i;
+      firstValidIdx = i;
+      break;
+    }
+  }
+  for (int32_t i = 0; i <= m_sReoderingStatus.iLargestBufferedPicIndex; ++i) {
+    if (i == firstValidIdx) continue;
+    if (m_sPictInfoList[i].iPOC != IMinInt32 && m_sPictInfoList[i].uiDecodingTimeStamp < uiDecodingTimeStamp) {
+      uiDecodingTimeStamp = m_sPictInfoList[i].uiDecodingTimeStamp;
+      m_sReoderingStatus.iPictInfoIndex = i;
+    }
+  }
+  if (uiDecodingTimeStamp > 0) {
+#if defined (_DEBUG)
+#ifdef _MOTION_VECTOR_DUMP_
+    fprintf(stderr, "Output POC: #%d uiDecodingTimeStamp=%d\n", m_sPictInfoList[m_sReoderingStatus.iPictInfoIndex].iPOC,
+      uiDecodingTimeStamp);
+#endif
+#endif
+    memcpy(pDstInfo, &m_sPictInfoList[m_sReoderingStatus.iPictInfoIndex].sBufferInfo, sizeof(SBufferInfo));
+    ppDst[0] = pDstInfo->pDst[0];
+    ppDst[1] = pDstInfo->pDst[1];
+    ppDst[2] = pDstInfo->pDst[2];
+    m_sPictInfoList[m_sReoderingStatus.iPictInfoIndex].iPOC = IMinInt32;
+    if (pCtx || m_pPicBuff) {
+      PPicBuff pPicBuff = pCtx ? pCtx->pPicBuff : m_pPicBuff;
+      PPicture pPic = pPicBuff->ppPic[m_sPictInfoList[m_sReoderingStatus.iPictInfoIndex].iPicBuffIdx];
+      --pPic->iRefCount;
+    }
+    if (m_sPictInfoList[m_sReoderingStatus.iPictInfoIndex].bLastGOP) {
+      --m_sReoderingStatus.iLastGOPRemainPicts;
+      m_sPictInfoList[m_sReoderingStatus.iPictInfoIndex].bLastGOP = false;
+    }
+    --m_sReoderingStatus.iNumOfPicts;
+  }
+  return;
+}
+
+DECODING_STATE CWelsDecoder::ReorderPicturesInDisplay(PWelsDecoderContext pDecContext, unsigned char** ppDst,
+  SBufferInfo* pDstInfo) {
   DECODING_STATE iRet = dsErrorFree;
-  if (pDstInfo->iBufferStatus == 1) {
+  if (pDecContext->pSps != NULL) {
     m_bIsBaseline = pDecContext->pSps->uiProfileIdc == 66 || pDecContext->pSps->uiProfileIdc == 83;
     if (!m_bIsBaseline) {
-      BufferingReadyPicture (pDecContext, ppDst, pDstInfo);
-      ReleaseBufferedReadyPicture (pDecContext, ppDst, pDstInfo);
+      if (pDecContext->pSliceHeader->eSliceType == B_SLICE) {
+        m_sReoderingStatus.bHasBSlice = true;
+      }
+      if (pDstInfo->iBufferStatus == 1) {
+        BufferingReadyPicture(pDecContext, ppDst, pDstInfo);
+        if (!m_sReoderingStatus.bHasBSlice) {
+          if (m_sReoderingStatus.iNumOfPicts > 1) { 
+            ReleaseBufferedReadyPictureNoReorder(pDecContext, ppDst, pDstInfo);
+          }
+          return iRet;
+        }
+        if (m_sReoderingStatus.iNumOfPicts) {
+          ReleaseBufferedReadyPicture(pDecContext, ppDst, pDstInfo);
+        }
+      }
     }
   }
   return iRet;

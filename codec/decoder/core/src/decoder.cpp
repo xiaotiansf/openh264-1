@@ -306,6 +306,7 @@ void ResetReorderingPictureBuffers (PPictReoderingStatus pPictReoderingStatus, P
     }
     pPictInfo->sBufferInfo.iBufferStatus = 0;
   }
+  pPictReoderingStatus->bHasBSlice = false;
 }
 
 /*
