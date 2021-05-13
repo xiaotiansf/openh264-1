@@ -922,7 +922,7 @@ DECODING_STATE CWelsDecoder::FlushFrame (unsigned char** ppDst,
     }
   }
   if (bEndOfStreamFlag && m_sReoderingStatus.iNumOfPicts > 0) {
-    if (!m_bIsBaseline && !m_sReoderingStatus.bHasBSlice)
+    if (!m_bIsBaseline && m_iThreadCount <= 1 && !m_sReoderingStatus.bHasBSlice)
     {
       ReleaseBufferedReadyPictureNoReorder(NULL, ppDst, pDstInfo);
       return dsErrorFree;
@@ -1288,9 +1288,7 @@ DECODING_STATE CWelsDecoder::ReorderPicturesInDisplay(PWelsDecoderContext pDecCo
           }
           return iRet;
         }
-        if (m_sReoderingStatus.iNumOfPicts) {
-          ReleaseBufferedReadyPicture(pDecContext, ppDst, pDstInfo);
-        }
+        ReleaseBufferedReadyPicture(pDecContext, ppDst, pDstInfo);
       }
     }
   }
