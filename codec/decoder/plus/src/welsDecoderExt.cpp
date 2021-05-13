@@ -1274,13 +1274,13 @@ void CWelsDecoder::ReleaseBufferedReadyPictureNoReorder(PWelsDecoderContext pCtx
 DECODING_STATE CWelsDecoder::ReorderPicturesInDisplay(PWelsDecoderContext pDecContext, unsigned char** ppDst,
   SBufferInfo* pDstInfo) {
   DECODING_STATE iRet = dsErrorFree;
-  if (pDecContext->pParam->bParseOnly) {
+  if (pDecContext == NULL || pDecContext->pParam->bParseOnly) {
     return iRet;
   }
-  if (pDecContext->pSps != NULL) {
+  if (pDecContext != NULL && pDecContext->pSps != NULL) {
     m_bIsBaseline = pDecContext->pSps->uiProfileIdc == 66 || pDecContext->pSps->uiProfileIdc == 83;
     if (!m_bIsBaseline) {
-      if (pDecContext->pSliceHeader != NULL && pDecContext->pSliceHeader->eSliceType == B_SLICE) {
+      if (pDecContext->pSliceHeader->eSliceType == B_SLICE) {
         m_sReoderingStatus.bHasBSlice = true;
       }
       if (pDstInfo->iBufferStatus == 1) {
