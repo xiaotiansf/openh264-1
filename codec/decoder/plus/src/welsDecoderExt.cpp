@@ -1277,7 +1277,7 @@ DECODING_STATE CWelsDecoder::ReorderPicturesInDisplay(PWelsDecoderContext pDecCo
   if (pDecContext->pSps != NULL) {
     m_bIsBaseline = pDecContext->pSps->uiProfileIdc == 66 || pDecContext->pSps->uiProfileIdc == 83;
     if (!m_bIsBaseline) {
-      if (pDecContext->pSliceHeader->eSliceType == B_SLICE) {
+      if (pDecContext->pSliceHeader != NULL && pDecContext->pSliceHeader->eSliceType == B_SLICE) {
         m_sReoderingStatus.bHasBSlice = true;
       }
       if (pDstInfo->iBufferStatus == 1) {
