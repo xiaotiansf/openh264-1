@@ -153,6 +153,7 @@ class CWelsDecoder : public ISVCDecoder {
                                  SBufferInfo* pDstInfo);
   void BufferingReadyPicture (PWelsDecoderContext pCtx, unsigned char** ppDst, SBufferInfo* pDstInfo);
   void ReleaseBufferedReadyPicture (PWelsDecoderContext pCtx, unsigned char** ppDst, SBufferInfo* pDstInfo);
+  void ReleaseBufferedReadyPictureNoReorder(PWelsDecoderContext pCtx, unsigned char** ppDst, SBufferInfo* pDstInfo);
 
   void OpenDecoderThreads();
   void CloseDecoderThreads();
