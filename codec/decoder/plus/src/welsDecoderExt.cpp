@@ -1128,42 +1128,6 @@ void CWelsDecoder::ReleaseBufferedReadyPicture (PWelsDecoderContext pCtx, unsign
     }
     return;
   }
-  if (m_sReoderingStatus.iNumOfPicts && m_bIsBaseline) {
-    uint32_t uiDecodingTimeStamp = 0;
-    int32_t firstValidIdx = -1;
-    for (int32_t i = 0; i <= m_sReoderingStatus.iLargestBufferedPicIndex; ++i) {
-      if (m_sPictInfoList[i].iPOC > IMinInt32) {
-        uiDecodingTimeStamp = m_sPictInfoList[i].uiDecodingTimeStamp;
-        m_sReoderingStatus.iPictInfoIndex = i;
-        firstValidIdx = i;
-        break;
-      }
-    }
-    for (int32_t i = 0; i <= m_sReoderingStatus.iLargestBufferedPicIndex; ++i) {
-      if (i == firstValidIdx) continue;
-      if (m_sPictInfoList[i].iPOC > IMinInt32 && m_sPictInfoList[i].uiDecodingTimeStamp < uiDecodingTimeStamp) {
-        uiDecodingTimeStamp = m_sPictInfoList[i].uiDecodingTimeStamp;
-        m_sReoderingStatus.iPictInfoIndex = i;
-      }
-    }
-    if (uiDecodingTimeStamp > 0) {
-#if defined (_DEBUG)
-#ifdef _MOTION_VECTOR_DUMP_
-      fprintf (stderr, "Output POC: #%d uiDecodingTimeStamp=%d\n", m_sPictInfoList[m_sReoderingStatus.iPictInfoIndex].iPOC,
-               uiDecodingTimeStamp);
-#endif
-#endif
-      memcpy (pDstInfo, &m_sPictInfoList[m_sReoderingStatus.iPictInfoIndex].sBufferInfo, sizeof (SBufferInfo));
-      ppDst[0] = pDstInfo->pDst[0];
-      ppDst[1] = pDstInfo->pDst[1];
-      ppDst[2] = pDstInfo->pDst[2];
-      m_sPictInfoList[m_sReoderingStatus.iPictInfoIndex].iPOC = IMinInt32;
-      PPicture pPic = pPicBuff->ppPic[m_sPictInfoList[m_sReoderingStatus.iPictInfoIndex].iPicBuffIdx];
-      --pPic->iRefCount;
-      --m_sReoderingStatus.iNumOfPicts;
-    }
-    return;
-  }
   if (m_sReoderingStatus.iNumOfPicts > 0) {
     m_sReoderingStatus.iMinPOC = IMinInt32;
     int32_t firstValidIdx = -1;
